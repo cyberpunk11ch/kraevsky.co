@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAEVSKY</title>
+    
+    <!-- Inline SVG Favicon: White K on Black Background -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Ctext x='52' y='68' font-family='system-ui, -apple-system, BlinkMacSystemFont, sans-serif' font-size='55' font-weight='700' fill='%23ffffff' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+
+    <!-- Importing Source Sans 3 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base & Reset --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Source Sans 3', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Hide default cursor on desktop */
+        @media (min-width: 1025px) {
+            html, body, a, button, input {
+                cursor: none !important;
+            }
+        }
+
+        /* --- FEATURE: Projector Reveal Background --- */
+        .bg-reveal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center center / cover no-repeat;
+            -webkit-filter: grayscale(100%) contrast(130%) brightness(70%);
+            filter: grayscale(100%) contrast(130%) brightness(70%);
+            opacity: 0;
+            z-index: -3;
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 10s ease-out;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+
+        .bg-reveal.is-revealed {
+            opacity: 0.15;
+            transform: scale(1);
+        }
+
+        /* --- FIXED & ENHANCED: High-Visibility Studio Spotlight Backing --- */
+        .bg-lighting {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle 450px at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(65, 65, 65, 0.8) 0%, rgba(15, 15, 15, 0.95) 60%, #000000 100%);
+            z-index: -1;
+            pointer-events: none;
+            will-change: background;
+        }
+
+        /* Tactile Fine-Art Film Grain Overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+
+        /* --- FEATURE: Lens Blur Transition Wrapper --- */
+        .page-wrapper {
+            height: 100%;
+            width: 100%;
+            transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), 
+                        filter 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+                        -webkit-filter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, filter;
+            
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0); 
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            
+            -webkit-filter: blur(0px);
+            filter: blur(0px);
+            background: transparent;
+        }
+
+        .page-wrapper.is-sliding {
+            -webkit-filter: blur(12px) brightness(1.15);
+            filter: blur(12px) brightness(1.15);
+        }
+
+        /* --- MOBILE/LAPTOP FEATURE: Elastic Pull Stretch --- */
+        .page-wrapper.is-stretching {
+            transform: translateY(var(--stretch-y, 0px)) scaleY(var(--stretch-scale, 1)) !important;
+            transition: transform 0.2s ease-out !important;
+        }
+
+        /* --- MODERN TOUCH 2: Ambient Studio Lighting Backdrop --- */
+        .screen {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background: radial-gradient(circle at center, #141414 0%, #000000 85%);
+        }
+
+        /* Top Navigation */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            opacity: 0;
+            animation: fadeInNavigation 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.6s;
+            flex-shrink: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-right svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main Content Block */
+        .main-content {
+            max-width: 700px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            margin: 20px 0;
+        }
+
+        /* Core Typography Animations */
+        @keyframes fadeInNavigation { to { opacity: 1; } }
+        
+        @keyframes trackingExpand {
+            0% { letter-spacing: -0.1em; opacity: 0; -webkit-filter: blur(6px); filter: blur(6px); transform: scale(0.95); margin-right: 0.1em; }
+            100% { letter-spacing: 0.15em; opacity: 1; -webkit-filter: blur(0px); filter: blur(0px); transform: scale(1); margin-right: -0.15em; }
+        }
+
+        @keyframes letterReveal {
+            from { opacity: 0; transform: translateY(15px); -webkit-filter: blur(3px); filter: blur(3px); }
+            to { opacity: 1; transform: translateY(0); -webkit-filter: blur(0px); filter: blur(0px); }
+        }
+        
+        @keyframes luxuryRevealUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .title {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            margin-right: -0.15em;
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: trackingExpand 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.1s;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.4em;
+            margin-right: -0.4em;
+            color: #d1d1d1;
+            margin-bottom: 35px;
+        }
+        .split-text span {
+            display: inline-block;
+            opacity: 0;
+            animation: letterReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .vertical-divider {
+            width: 1px;
+            height: 45px;
+            background-color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 35px;
+            opacity: 0;
+            animation: luxuryRevealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.6s;
+        }
+
+        .coming-soon {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            margin-right: -0.3em;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            font-size: 15px;
+            font-weight: 300;
+            line-height: 1.7;
+            color: #b8b8b8;
+            max-width: 540px;
+            margin-bottom: 50px;
+            letter-spacing: 0.02em;
+            opacity: 0;
+            animation: luxuryRevealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.9s;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            opacity: 0;
+            animation: luxuryRevealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 1.0s;
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 14px 34px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: transparent;
+            color: #ffffff;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), letter-spacing 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-outline::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            transform: translateY(102%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+        }
+        .btn-outline:hover {
+            color: #000000;
+            border-color: #ffffff;
+            letter-spacing: 0.25em;
+        }
+        .btn-outline:hover::before {
+            transform: translateY(0);
+        }
+
+        .btn-link {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 4px;
+            position: relative;
+            transition: letter-spacing 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-link::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-link:hover {
+            letter-spacing: 0.26em;
+        }
+        .btn-link:hover::after {
+            background-color: rgba(255, 255, 255, 1);
+        }
+        .btn-link svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 1.5;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-link:hover svg {
+            transform: translate(2px, -2px);
+        }
+
+        .hero-spacer {
+            height: 20px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        /* --- SCREEN 2: Footer / Contact Panel --- */
+        .footer-screen {
+            justify-content: center;
+            position: relative;
+        }
+
+        .section-divider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-name {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            margin-right: -0.25em;
+            margin-bottom: 10px;
+        }
+
+        .footer-role {
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            margin-right: -0.3em;
+            color: #888888;
+            margin-bottom: 40px;
+        }
+
+        .contact-list {
+            list-style: none;
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 40px;
+        }
+
+        .contact-list li {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.12em;
+        }
+
+        .contact-list li:first-child {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .contact-list li svg {
+            width: 18px;
+            height: 18px;
+            stroke: #777777;
+            stroke-width: 1.5;
+            fill: none;
+            transition: stroke 0.3s ease;
+        }
+
+        .contact-list li:hover svg {
+            stroke: #ffffff;
+        }
+
+        .contact-list li a {
+            transition: color 0.3s ease, letter-spacing 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .contact-list li:hover a {
+            letter-spacing: 0.15em;
+        }
+
+        .copyright {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: #555555;
+            margin-top: 20px;
+        }
+
+        /* Custom Micro Cursor Architecture */
+        .cursor-dot {
+            width: 5px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .cursor-ring {
+            width: 26px;
+            height: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: left 0.15s ease-out, top 0.15s ease-out, width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+            display: none;
+        }
+
+        .cursor-ring.cursor-hover {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Floating Navigation Indicators */
+        .page-indicator {
+            position: fixed;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .ind-num {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            color: #444444;
+            transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ind-num.active { color: #ffffff; }
+        .ind-line-wrapper {
+            height: 40px;
+            width: 1px;
+            background-color: rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .ind-line-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: top;
+        }
+
+        /* Audio Presence Toggle UI */
+        .audio-toggle {
+            position: fixed;
+            bottom: 40px;
+            right: 50px;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            color: #666666;
+            cursor: pointer;
+            z-index: 100;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+        .audio-toggle:hover, .audio-toggle.active {
+            color: #ffffff;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .cursor-dot, .cursor-ring { display: none !important; }
+            .audio-toggle { bottom: 25px; right: 25px; display: block !important; }
+            
+            .page-indicator {
+                left: 50%;
+                top: auto;
+                bottom: 25px;
+                transform: translateX(-50%);
+                flex-direction: row;
+                gap: 12px;
+            }
+            .ind-line-wrapper { height: 1px; width: 30px; }
+            .ind-line-fill {
+                top: 0; left: 0; width: 50%; height: 100%;
+                transform-origin: left;
+                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .screen { padding: 30px 24px; }
+            .title { font-size: 40px !important; letter-spacing: 0.1em; margin-right: -0.1em; }
+            .subtitle { margin-bottom: 25px; font-size: 11px; }
+            .vertical-divider { height: 30px; margin-bottom: 25px; }
+            .coming-soon { font-size: 15px; margin-bottom: 15px; }
+            .description { font-size: 13px; margin-bottom: 35px; max-width: 100%; }
+            .actions { flex-direction: column; gap: 20px; width: 100%; }
+            .btn-outline { width: 100%; max-width: 280px; padding: 12px 24px; }
+        }
+
+        /* Landscape Overhaul Style Fixes */
+        @media (max-height: 500px) and (orientation: landscape) {
+            html, body { 
+                overflow-y: auto !important; 
+                overflow-x: hidden !important;
+                height: auto !important; 
+            }
+            
+            .page-wrapper { 
+                height: auto !important; 
+                transform: none !important; 
+                -webkit-filter: none !important;
+                filter: none !important;
+                display: block !important;
+            }
+            
+            .page-wrapper.is-sliding {
+                -webkit-filter: none !important;
+                filter: none !important;
+            }
+            
+            .page-wrapper.is-stretching {
+                transform: none !important;
+            }
+            
+            .screen { 
+                height: auto !important; 
+                min-height: 100vh !important; 
+                padding: 40px; 
+                justify-content: center !important;
+                align-items: center !important;
+                position: relative;
+            }
+
+            .hero-screen { padding-bottom: 60px; }
+            .footer-screen {
+                padding-top: 60px;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            
+            .section-divider { display: none !important; }
+            .main-content { margin: 20px 0 !important; max-width: 620px; }
+            
+            .title { 
+                font-size: 38px !important; 
+                letter-spacing: 0.1em !important;
+                margin-bottom: 6px !important; 
+            }
+            
+            .subtitle { font-size: 11px !important; margin-bottom: 20px !important; }
+            .vertical-divider, .description, .hero-spacer, .footer-role { display: none !important; }
+            
+            .coming-soon {
+                font-size: 14px !important;
+                margin-bottom: 20px !important;
+                letter-spacing: 0.25em !important;
+            }
+            
+            .actions { 
+                flex-direction: row !important; 
+                gap: 30px !important; 
+                width: auto !important; 
+                justify-content: center;
+            }
+
+            .btn-outline { padding: 10px 24px !important; }
+            .page-indicator { display: none !important; }
+            .contact-list { margin-bottom: 24px !important; max-width: 400px; }
+            .contact-list li { padding: 12px 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cinematic Reveal Projector -->
+    <div class="bg-reveal" id="bgReveal"></div>
+
+    <!-- Fixed Studio Ambient Spotlight Backdrop -->
+    <div class="bg-lighting" id="ambientSpot"></div>
+
+    <!-- Audio "Presence" Toggle -->
+    <div class="audio-toggle interactive-element" id="audioToggle">SOUND: OFF</div>
+
+    <!-- Floating Paged Markers -->
+    <div class="page-indicator">
+        <span class="ind-num active" id="pageNum01">01</span>
+        <div class="ind-line-wrapper">
+            <div class="ind-line-fill" id="lineFill"></div>
+        </div>
+        <span class="ind-num" id="pageNum02">02</span>
+    </div>
+
+    <!-- Micro Cursor Architecture -->
+    <div class="cursor-dot" id="customDot"></div>
+    <div class="cursor-ring" id="customRing"></div>
+
+    <!-- Kinematic Page Wrapper -->
+    <div class="page-wrapper" id="mainWrapper">
+
+        <!-- FIRST PAGE -->
+        <section class="screen hero-screen">
+            <header class="header">
+                <div>KRAEVSKY.CO</div>
+                <a href="https://instagram.com/kraevsky.co" target="_blank" class="header-right interactive-element trigger-reveal">
+                    INSTAGRAM 
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                </a>
+            </header>
+
+            <div class="main-content">
+                <h1 class="title">KRAEVSKY</h1>
+                <h2 class="subtitle split-text" data-delay="0.3">THE ART OF PRESENCE</h2>
+                
+                <div class="vertical-divider"></div>
+                
+                <h3 class="coming-soon split-text" data-delay="0.7">COMING SOON</h3>
+                <p class="description">Luxury photography experiences crafted with intention, emotion and presence.</p>
+                
+                <div class="actions">
+                    <button onclick="navigateToPage(1)" class="btn-outline interactive-element trigger-reveal">CONTACT ALEX</button>
+                    <a href="https://instagram.com/kraevsky.co" target="_blank" class="btn-link interactive-element trigger-reveal">
+                        INSTAGRAM
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-spacer"></div>
+        </section>
+
+        <!-- SECOND PAGE -->
+        <section class="screen footer-screen">
+            <div class="section-divider"></div>
+            
+            <h2 class="footer-name">ALEX KRAEVSKY</h2>
+            <h3 class="footer-role">PHOTOGRAPHER</h3>
+
+            <ul class="contact-list">
+                <li class="interactive-element trigger-reveal">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <a href="mailto:alex@kraevsky.co">alex@kraevsky.co</a>
+                </li>
+                <li class="interactive-element trigger-reveal">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <a href="https://instagram.com/kraevsky.co" target="_blank">@kraevsky.co</a>
+                </li>
+            </ul>
+
+            <div class="copyright">&copy; KRAEVSKY.CO</div>
+        </section>
+
+    </div>
+
+    <!-- Implementation Scripts -->
+    <script>
+        const wrapper = document.getElementById('mainWrapper');
+        const customDot = document.getElementById('customDot');
+        const customRing = document.getElementById('customRing');
+        const bgReveal = document.getElementById('bgReveal');
+        const ambientSpot = document.getElementById('ambientSpot');
+        const audioToggle = document.getElementById('audioToggle');
+        
+        const pageNum01 = document.getElementById('pageNum01');
+        const pageNum02 = document.getElementById('pageNum02');
+        const lineFill = document.getElementById('lineFill');
+
+        let currentPage = 0;
+        const totalPages = 2;
+        let isTransitioning = false;
+
+        function isLandscapeCrashZone() {
+            return (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
+        }
+
+        /* --- UNIFIED CINEMATIC AUDIO ARCHITECTURE --- */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let isSoundOn = false;
+        
+        let oscs = [];
+        let lfo, lfoGain, masterFilter, masterGain;
+
+        function startAmbientPad() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            masterGain.gain.linearRampToValueAtTime(0.22, audioCtx.currentTime + 2.5);
+
+            masterFilter = audioCtx.createBiquadFilter();
+            masterFilter.type = 'lowpass';
+            masterFilter.frequency.setValueAtTime(280, audioCtx.currentTime); 
+            masterFilter.Q.setValueAtTime(1.5, audioCtx.currentTime);
+
+            const frequencies = [55.00, 110.00, 164.81, 220.00, 329.63]; 
+            const waveTypes = ['triangle', 'sine', 'triangle', 'sine', 'sine'];
+            const idealGains = [0.40, 0.35, 0.25, 0.20, 0.12];
+
+            frequencies.forEach((freq, i) => {
+                let osc = audioCtx.createOscillator();
+                let oscGain = audioCtx.createGain();
+                
+                osc.type = waveTypes[i];
+                osc.frequency.setValueAtTime(freq + (Math.random() * 0.2 - 0.1), audioCtx.currentTime);
+                
+                oscGain.gain.setValueAtTime(idealGains[i], audioCtx.currentTime);
+                
+                osc.connect(oscGain);
+                oscGain.connect(masterFilter);
+                osc.start();
+                oscs.push(osc);
+            });
+
+            lfo = audioCtx.createOscillator();
+            lfo.frequency.setValueAtTime(0.09, audioCtx.currentTime);
+            
+            lfoGain = audioCtx.createGain();
+            lfoGain.gain.setValueAtTime(65, audioCtx.currentTime); 
+            
+            lfo.connect(lfoGain);
+            lfoGain.connect(masterFilter.frequency);
+            lfo.start();
+
+            masterFilter.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+        }
+
+        function stopAmbientPad() {
+            if (masterGain) {
+                masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
+                masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.0);
+                setTimeout(() => {
+                    try {
+                        oscs.forEach(osc => osc.stop());
+                        if (lfo) lfo.stop();
+                        oscs = [];
+                    } catch(e){}
+                }, 1100);
+            }
+        }
+
+        audioToggle.addEventListener('click', () => {
+            isSoundOn = !isSoundOn;
+            audioToggle.innerText = isSoundOn ? 'SOUND: ON' : 'SOUND: OFF';
+            audioToggle.classList.toggle('active', isSoundOn);
+            
+            if (isSoundOn) {
+                startAmbientPad();
+            } else {
+                stopAmbientPad();
+            }
+        });
+
+        /* --- Page Switch Controller --- */
+        function navigateToPage(pageIndex) {
+            if (pageIndex < 0 || pageIndex >= totalPages) return;
+            
+            if (isLandscapeCrashZone()) {
+                const targetElement = document.querySelectorAll('.screen')[pageIndex];
+                if(targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+                currentPage = pageIndex;
+                return;
+            }
+
+            isTransitioning = true;
+            currentPage = pageIndex;
+            
+            wrapper.classList.remove('is-stretching');
+            wrapper.classList.add('is-sliding');
+
+            wrapper.style.transform = "translateY(-" + (currentPage * 100) + "vh)";
+            
+            if (currentPage === 0) {
+                pageNum01.classList.add('active');
+                pageNum02.classList.remove('active');
+                if (window.innerWidth > 1024) lineFill.style.transform = 'translateY(0%)';
+                else lineFill.style.transform = 'translateX(0%)';
+            } else {
+                pageNum01.classList.remove('active');
+                pageNum02.classList.add('active');
+                if (window.innerWidth > 1024) lineFill.style.transform = 'translateY(100%)';
+                else lineFill.style.transform = 'translateX(100%)';
+            }
+            
+            setTimeout(() => {
+                wrapper.classList.remove('is-sliding');
+            }, 450);
+
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 900);
+        }
+
+        /* --- Text Splitting --- */
+        document.querySelectorAll('.split-text').forEach(el => {
+            const delayBase = parseFloat(el.getAttribute('data-delay')) || 0;
+            const text = el.textContent;
+            el.textContent = '';
+            text.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                span.style.animationDelay = `${delayBase + (i * 0.04)}s`;
+                el.appendChild(span);
+            });
+        });
+
+        /* --- RE-ARCHITECTED SPOTLIGHT INTERACTION ENGINE (DESKTOP + MOBILE) --- */
+        function updateSpotlightCoordinates(clientX, clientY) {
+            const pctX = (clientX / window.innerWidth) * 100;
+            const pctY = (clientY / window.innerHeight) * 100;
+            
+            document.documentElement.style.setProperty('--spotlight-x', `${pctX}%`);
+            document.documentElement.style.setProperty('--spotlight-y', `${pctY}%`);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            updateSpotlightCoordinates(e.clientX, e.clientY);
+
+            if (window.innerWidth > 1024) {
+                customDot.style.display = 'block';
+                customRing.style.display = 'block';
+                customDot.style.left = `${e.clientX}px`;
+                customDot.style.top = `${e.clientY}px`;
+                customRing.style.left = `${e.clientX}px`;
+                customRing.style.top = `${e.clientY}px`;
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if(e.touches && e.touches.length > 0) {
+                updateSpotlightCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        const interactiveElements = document.querySelectorAll('.interactive-element, a, button');
+        interactiveElements.forEach((el) => {
+            el.addEventListener('mouseenter', () => {
+                customRing.classList.add('cursor-hover');
+                if (el.classList.contains('trigger-reveal')) bgReveal.classList.add('is-revealed');
+            });
+            el.addEventListener('mouseleave', () => {
+                customRing.classList.remove('cursor-hover');
+                if (el.classList.contains('trigger-reveal')) bgReveal.classList.remove('is-revealed');
+            });
+        });
+
+        /* --- Scroll / Drag Physics for Page Transitions --- */
+        window.addEventListener('wheel', (e) => {
+            if (isLandscapeCrashZone() || isTransitioning) return;
+            if (e.deltaY > 15 && currentPage === 0) navigateToPage(1);
+            else if (e.deltaY < -15 && currentPage === 1) navigateToPage(0);
+        }, { passive: true });
+
+        let touchStartPos = 0;
+        let currentTouchPos = 0;
+        
+        window.addEventListener('touchstart', (e) => {
+            if (isLandscapeCrashZone()) return;
+            touchStartPos = e.touches[0].clientY;
+            updateSpotlightCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+            if (isLandscapeCrashZone()) return;
+            
+            wrapper.classList.remove('is-stretching');
+            wrapper.style.removeProperty('--stretch-y');
+            wrapper.style.removeProperty('--stretch-scale');
+            
+            if (isTransitioning) return;
+            let diff = touchStartPos - e.changedTouches[0].clientY;
+
+            if (diff > 50 && currentPage === 0) navigateToPage(1);
+            else if (diff < -50 && currentPage === 1) navigateToPage(0);
+            else {
+                if(!isTransitioning) {
+                    wrapper.style.transform = "translateY(-" + (currentPage * 100) + "vh)";
+                }
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            if (isLandscapeCrashZone()) {
+                wrapper.style.transform = "none";
+            } else {
+                wrapper.style.transform = "translateY(-" + (currentPage * 100) + "vh)";
+            }
+        });
+    </script>
+
+</body>
+</html>
